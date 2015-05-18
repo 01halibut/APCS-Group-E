@@ -58,6 +58,5 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# Bin folder, .settings folder
-bin/**
+# .settings folder
 .settings/**
