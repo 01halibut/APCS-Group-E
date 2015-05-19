@@ -2,6 +2,7 @@ package game;
 
 import resources.ResourceLoader;
 import javafx.animation.Interpolator;
+import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -19,7 +20,8 @@ import javafx.util.Duration;
 
 public class Main extends Application{
 	
-	final double ACC = 0.8;
+	final double GRAVITY = 1000;
+	final double JUMP_VEL = 420;
 	private ImageView bkgrd = null ;
 	private ImageView flappy = null ;
 	private TranslateTransition flappyFall = null;
@@ -34,7 +36,7 @@ public class Main extends Application{
             public void handle(ActionEvent event) {
             	root.getChildren().remove(button);
             	flappyFall = new TranslateTransition(
-            			new Duration(30 * Math.sqrt(2*(300 - flappy.getTranslateY())/ACC))
+            			Duration.seconds(Math.sqrt(2*(300 - (flappy.getTranslateY() - (JUMP_VEL/GRAVITY)*(JUMP_VEL/2)))/GRAVITY))
             			, flappy);
             	flappyFall.setToY(300);
             	flappyFall.setInterpolator(new Interpolator() {
@@ -52,7 +54,7 @@ public class Main extends Application{
             public void handle(MouseEvent event) {
             	flap.stop();
             	if(root.getChildren().contains(button)) return;
-            	flappyFlap.setToY(flappy.getTranslateY() - 100);
+            	flappyFlap.setToY(flappy.getTranslateY() - (JUMP_VEL/GRAVITY)*(JUMP_VEL/2));
             	flappyFlap.setInterpolator(new Interpolator() {
             		protected double curve(double t) {
         				return Math.sqrt(t);
@@ -69,7 +71,7 @@ public class Main extends Application{
     		@Override
     		public void handle(ActionEvent event) {
             	flappyFall = new TranslateTransition(
-            			new Duration(30 * Math.sqrt(2*(300 - flappy.getTranslateY())/ACC))
+            			Duration.seconds(Math.sqrt(2*(300 - (flappy.getTranslateY() - (JUMP_VEL/GRAVITY)*(JUMP_VEL/2)))/GRAVITY))
             			, flappy);
             	flappyFall.setToY(300);
             	flappyFall.setInterpolator(new Interpolator() {
@@ -93,7 +95,7 @@ public class Main extends Application{
 		flap = new MediaPlayer(new Media(ResourceLoader.class.getResource("flap.mp3").toString()));
 		
 		flappyFlap = new TranslateTransition();
-    	flappyFlap = new TranslateTransition(new Duration(30 * Math.sqrt(200/ACC)), flappy);
+    	flappyFlap = new TranslateTransition(Duration.seconds(JUMP_VEL/GRAVITY), flappy);
 		flappyFall = new TranslateTransition();
 
 		
