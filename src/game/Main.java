@@ -112,8 +112,8 @@ public class Main extends Application{
 		Scene scene = new Scene(root, 400, 400);
 		
     	flappy.xProperty().set(scene.getWidth()/2 - 25);
-    	flappy.yProperty().set(300);
-    	flappy.translateYProperty().set(-scene.getHeight()/2 - 25);
+    	flappy.yProperty().set(scene.getHeight() - 100);
+    	flappy.translateYProperty().set(-scene.getHeight()/2);
     	
     	button.translateXProperty().set(scene.getWidth()/2 - 25);
     	button.translateYProperty().set(scene.getHeight() - 50);
