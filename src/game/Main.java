@@ -52,7 +52,7 @@ public class Main extends Application{
     }
     
     private void addMouseEventHandler(){
-    	root.onMouseClickedProperty().set(new EventHandler<MouseEvent>() {
+    	root.onMousePressedProperty().set(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
             	flap.stop();
