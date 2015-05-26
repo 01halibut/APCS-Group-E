@@ -21,6 +21,11 @@ import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+/**
+ * This is the most godawful code I've ever written
+ * I should be ashamed
+ *
+ */
 
 public class Main extends Application{
 	
