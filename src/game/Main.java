@@ -1,5 +1,6 @@
 package game;
 
+
 import resources.ResourceLoader;
 import javafx.animation.Interpolator;
 import javafx.animation.SequentialTransition;
@@ -18,6 +19,9 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -40,6 +44,7 @@ public class Main extends Application{
 	private ImageView upper2 = null;
 	private ImageView lower2 = null;
 	private ImageView start = null;
+	private Text scoreDisplay = null;
 	private SequentialTransition flappyTransition = null;
 	private TranslateTransition flappyFall = null;
 	private TranslateTransition flappyFlap = null;
@@ -56,6 +61,7 @@ public class Main extends Application{
 	
 	private int set1Height;
 	private int set2Height;
+	private int score = 0;
 	
 	private MediaPlayer flap = null;
 	private Group root = null;
@@ -68,12 +74,7 @@ public class Main extends Application{
     	    public void handle(MouseEvent m) {
     	        if(!m.getButton().equals(MouseButton.PRIMARY)) return;
     	        if(gameOver){
-    	        	root.getChildren().remove(youSuck);
-    	        	root.getChildren().add(start);
-    	        	flappy.translateYProperty().set(-200);
-    	        	flappyTransition.stop();
-    	        	gameOver = false;
-    	        	ground.setTranslateX(0);
+    	        	resetGame();
     	        	return;
     	        }
     	        if(!started){
@@ -92,29 +93,9 @@ public class Main extends Application{
                 	
                 	upper1Move1.play();
                 	lower1Move1.play();
+                	started = true;
     	        }
-    	        flap.stop();
-            	flappyTransition.stop();
-            	flappyTransition.getChildren().clear();
-            	flappyFlap.setToY(Math.max(flappy.getTranslateY() - (JUMP_VEL/GRAVITY)*(JUMP_VEL/2),
-            								-330));
-            	flappyFlap.setInterpolator(new Interpolator() {
-            		protected double curve(double t) {
-        				return Math.sqrt(t);
-        			}});
-            	
-            	flappyFall = new TranslateTransition(
-            			Duration.seconds(Math.sqrt(-2*(flappy.getTranslateY() - (JUMP_VEL/GRAVITY)*(JUMP_VEL/2))/GRAVITY))
-            			, flappy);
-            	flappyFall.setToY(0);
-            	flappyFall.setInterpolator(new Interpolator() {
-            		protected double curve(double t) {
-    					return t * t;
-    				}});
-            	
-            	flappyTransition.getChildren().addAll(flappyFlap, flappyFall);
-            	flap.play();
-            	flappyTransition.play();
+    	        flap();
     	    }
     	});
     }
@@ -131,10 +112,8 @@ public class Main extends Application{
     	flappyTransition.onFinishedProperty().set(new EventHandler<ActionEvent>(){
 			@Override
 			public void handle(ActionEvent event) {
-				groundMove.stop();
-				started = false;
-				gameOver = true;
-				root.getChildren().add(youSuck);
+				if(gameOver) return;
+				endGame();
 			}
     	});
     }
@@ -143,6 +122,15 @@ public class Main extends Application{
     	upper1Move1.onFinishedProperty().set(new EventHandler<ActionEvent>(){
 			@Override
 			public void handle(ActionEvent arg0) {
+				if(flappy.getTranslateY() - set1Height < -110 ||
+						flappy.getTranslateY() - set1Height > -40){
+					flappy.rotateProperty().set(90);
+					endGame();
+					flap();
+					return;
+				}
+				score += 1;
+				scoreDisplay.setText("Score: " + score);
 				upper1Move2.play();
 				lower1Move2.play();
 				if(!number2Started){
@@ -155,6 +143,15 @@ public class Main extends Application{
     	upper2Move1.onFinishedProperty().set(new EventHandler<ActionEvent>(){
 			@Override
 			public void handle(ActionEvent arg0) {
+				if(flappy.getTranslateY() - set2Height < -110 ||
+						flappy.getTranslateY() - set2Height > -40){
+					flappy.rotateProperty().set(90);
+					endGame();
+					flap();
+					return;
+				}
+				score += 1;
+				scoreDisplay.setText("Score: " + score);
 				upper2Move2.play();
 				lower2Move2.play();
 			}
@@ -164,7 +161,6 @@ public class Main extends Application{
 			@Override
 			public void handle(ActionEvent arg0) {
 				set1Height = -(int) (Math.random() * 170);
-		    	set2Height = -(int) (Math.random() * 170);
 		    	upper1.setTranslateY(set1Height);
 		    	lower1.setTranslateY(set1Height);
 				upper1.setTranslateX(0);
@@ -176,6 +172,7 @@ public class Main extends Application{
     	upper2Move2.onFinishedProperty().set(new EventHandler<ActionEvent>(){
 			@Override
 			public void handle(ActionEvent arg0) {
+		    	set2Height = -(int) (Math.random() * 170);
 		    	upper2.setTranslateY(set2Height);
 		    	lower2.setTranslateY(set2Height);
 				upper2.setTranslateX(0);
@@ -184,6 +181,60 @@ public class Main extends Application{
 				lower2Move1.play();
 			}
     	});
+    }
+    
+    private void endGame(){
+    	groundMove.stop();
+		started = false;
+		gameOver = true;
+		root.getChildren().add(youSuck);
+		upper1Move1.pause();
+		upper2Move1.pause();
+		upper1Move2.pause();
+		upper2Move2.pause();
+		lower1Move1.pause();
+		lower2Move1.pause();
+		lower1Move2.pause();
+		lower2Move2.pause();
+    }
+    private void resetGame(){
+    	root.getChildren().remove(youSuck);
+    	root.getChildren().add(start);
+    	flappy.translateYProperty().set(-200);
+    	flappy.setRotate(0);
+    	flappyTransition.stop();
+    	gameOver = false;
+    	number2Started = false;
+    	ground.setTranslateX(0);
+    	upper1.setTranslateX(0);
+		upper2.setTranslateX(0);
+		lower1.setTranslateX(0);
+		lower2.setTranslateX(0);
+		score = 0;
+    	scoreDisplay.setText("Score:" + score);
+    }
+    private void flap(){
+    	flap.stop();
+    	flappyTransition.stop();
+    	flappyTransition.getChildren().clear();
+    	flappyFlap.setToY(Math.max(flappy.getTranslateY() - (JUMP_VEL/GRAVITY)*(JUMP_VEL/2), -330));
+    	flappyFlap.setInterpolator(new Interpolator() {
+    		protected double curve(double t) {
+				return Math.sqrt(t);
+			}});
+    	
+    	flappyFall = new TranslateTransition(
+    			Duration.seconds(Math.sqrt(-2*(flappy.getTranslateY() - (JUMP_VEL/GRAVITY)*(JUMP_VEL/2))/GRAVITY))
+    			, flappy);
+    	flappyFall.setToY(0);
+    	flappyFall.setInterpolator(new Interpolator() {
+    		protected double curve(double t) {
+				return t * t;
+			}});
+    	
+    	flappyTransition.getChildren().addAll(flappyFlap, flappyFall);
+    	flap.play();
+    	flappyTransition.play();
     }
 	
 	@Override
@@ -234,6 +285,13 @@ public class Main extends Application{
     	lower2Move2 = new TranslateTransition(Duration.seconds(2.25), lower2);
 		lower2Move2.setToX(-500);
     	lower2Move2.setInterpolator(Interpolator.LINEAR);
+    	
+    	scoreDisplay = new Text();
+    	scoreDisplay.setText("Score:" + score);
+    	scoreDisplay.toFront();
+    	scoreDisplay.setFont(new Font(24));
+    	scoreDisplay.setX(25);
+    	scoreDisplay.setY(25);
 
 		
 		
@@ -245,7 +303,8 @@ public class Main extends Application{
 									lower2,
 									ground,
 									flappy,
-									start);
+									start,
+									scoreDisplay);
 
 		
 		
@@ -292,6 +351,8 @@ public class Main extends Application{
     	
 		primaryStage.setScene(scene);
 		primaryStage.show();
+		
+		primaryStage.setTitle("CrappyBird");
 		
 		//lower2Move1.play();
 //		primaryStage.setResizable(false);
