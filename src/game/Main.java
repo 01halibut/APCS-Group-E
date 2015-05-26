@@ -30,17 +30,33 @@ public class Main extends Application{
 	private ImageView flappy = null ;
 	private ImageView ground = null;
 	private ImageView youSuck = null;
-//	private ImageView upper1 = null;
-//	private ImageView lower1 = null;
+	private ImageView upper1 = null;
+	private ImageView lower1 = null;
+	private ImageView upper2 = null;
+	private ImageView lower2 = null;
 	private ImageView start = null;
 	private SequentialTransition flappyTransition = null;
 	private TranslateTransition flappyFall = null;
 	private TranslateTransition flappyFlap = null;
 	private TranslateTransition groundMove = null;
+	
+	private TranslateTransition upper1Move1 = null;
+	private TranslateTransition upper2Move1 = null;
+	private TranslateTransition lower1Move1 = null;
+	private TranslateTransition lower2Move1 = null;
+	private TranslateTransition upper1Move2 = null;
+	private TranslateTransition upper2Move2 = null;
+	private TranslateTransition lower1Move2 = null;
+	private TranslateTransition lower2Move2 = null;
+	
+	private int set1Height;
+	private int set2Height;
+	
 	private MediaPlayer flap = null;
 	private Group root = null;
 	private boolean started = false;
 	private boolean gameOver = false;
+	private boolean number2Started = false;
     
     private void addKeyEventHandler(){
     	root.onMousePressedProperty().set(new EventHandler<MouseEvent>() {
@@ -68,6 +84,9 @@ public class Main extends Application{
                 	flappyTransition.getChildren().add(flappyFall);
                 	flappyTransition.play();
                 	groundMove.play();
+                	
+                	upper1Move1.play();
+                	lower1Move1.play();
     	        }
     	        flap.stop();
             	flappyTransition.stop();
@@ -114,6 +133,53 @@ public class Main extends Application{
 			}
     	});
     }
+    
+    private void addObstacleHandler(){
+    	upper1Move1.onFinishedProperty().set(new EventHandler<ActionEvent>(){
+			@Override
+			public void handle(ActionEvent arg0) {
+				upper1Move2.play();
+				lower1Move2.play();
+				if(!number2Started){
+					upper2Move1.play();
+					lower2Move1.play();
+					number2Started = true;
+				}
+			}
+    	});
+    	upper2Move1.onFinishedProperty().set(new EventHandler<ActionEvent>(){
+			@Override
+			public void handle(ActionEvent arg0) {
+				upper2Move2.play();
+				lower2Move2.play();
+			}
+    	});
+    	
+    	upper1Move2.onFinishedProperty().set(new EventHandler<ActionEvent>(){
+			@Override
+			public void handle(ActionEvent arg0) {
+				set1Height = -(int) (Math.random() * 170);
+		    	set2Height = -(int) (Math.random() * 170);
+		    	upper1.setTranslateY(set1Height);
+		    	lower1.setTranslateY(set1Height);
+				upper1.setTranslateX(0);
+				lower1.setTranslateX(0);
+				upper1Move1.play();
+				lower1Move1.play();
+			}
+    	});
+    	upper2Move2.onFinishedProperty().set(new EventHandler<ActionEvent>(){
+			@Override
+			public void handle(ActionEvent arg0) {
+		    	upper2.setTranslateY(set2Height);
+		    	lower2.setTranslateY(set2Height);
+				upper2.setTranslateX(0);
+				lower2.setTranslateX(0);
+				upper2Move1.play();
+				lower2Move1.play();
+			}
+    	});
+    }
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -125,20 +191,53 @@ public class Main extends Application{
 		start = new ImageView("./resources/getready.png");
 		ground = new ImageView("./resources/ground.png");
 		youSuck = new ImageView("./resources/gameover.png");
-//		upper1 = new ImageView("./resources/obstacle_top.png");
+		upper1 = new ImageView("./resources/obstacle_top.png");
+		upper2 = new ImageView("./resources/obstacle_top.png");
+		lower1 = new ImageView("./resources/obstacle_bottom.png");
+		lower2 = new ImageView("./resources/obstacle_bottom.png");
 		
 		
 		flap = new MediaPlayer(new Media(ResourceLoader.class.getResource("flap.mp3").toString()));
 		
 		flappyTransition = new SequentialTransition();
-		flappyFlap = new TranslateTransition();
     	flappyFlap = new TranslateTransition(Duration.seconds(JUMP_VEL/GRAVITY), flappy);
 		flappyFall = new TranslateTransition();
+
+		/*LET'S DO ALL THIS MANUALLY BECAUSE REASONS*/
+		upper1Move1 = new TranslateTransition(Duration.seconds(2.25), upper1);
+		upper1Move1.setToX(-250);
+    	upper1Move1.setInterpolator(Interpolator.LINEAR);
+    	upper2Move1 = new TranslateTransition(Duration.seconds(2.25), upper2);
+		upper2Move1.setToX(-250);
+    	upper2Move1.setInterpolator(Interpolator.LINEAR);
+    	lower1Move1 = new TranslateTransition(Duration.seconds(2.25), lower1);
+		lower1Move1.setToX(-250);
+    	lower1Move1.setInterpolator(Interpolator.LINEAR);
+    	lower2Move1 = new TranslateTransition(Duration.seconds(2.25), lower2);
+		lower2Move1.setToX(-250);
+    	lower2Move1.setInterpolator(Interpolator.LINEAR);
+    	
+    	upper1Move2 = new TranslateTransition(Duration.seconds(2.25), upper1);
+		upper1Move2.setToX(-500);
+    	upper1Move2.setInterpolator(Interpolator.LINEAR);
+    	upper2Move2 = new TranslateTransition(Duration.seconds(2.25), upper2);
+		upper2Move2.setToX(-500);
+    	upper2Move2.setInterpolator(Interpolator.LINEAR);
+    	lower1Move2 = new TranslateTransition(Duration.seconds(2.25), lower1);
+		lower1Move2.setToX(-500);
+    	lower1Move2.setInterpolator(Interpolator.LINEAR);
+    	lower2Move2 = new TranslateTransition(Duration.seconds(2.25), lower2);
+		lower2Move2.setToX(-500);
+    	lower2Move2.setInterpolator(Interpolator.LINEAR);
 
 		
 		
 		//Add controls
 		root.getChildren().addAll( bkgrd,
+									upper1,
+									lower1,
+									upper2,
+									lower2,
 									ground,
 									flappy,
 									start);
@@ -164,17 +263,37 @@ public class Main extends Application{
     	groundMove.setToX(-400);
     	groundMove.setInterpolator(Interpolator.LINEAR);
     	
+    	upper1.xProperty().set(400);
+    	upper2.xProperty().set(400);
+    	lower1.xProperty().set(400);
+    	lower2.xProperty().set(400);
+    	
+    	upper1.yProperty().set(-100);
+    	upper2.yProperty().set(-100);
+    	lower1.yProperty().set(320);
+    	lower2.yProperty().set(320);
+    	
+    	set1Height = -(int) (Math.random() * 170);
+    	set2Height = -(int) (Math.random() * 170);
+    	
+    	upper1.setTranslateY(set1Height);
+    	lower1.setTranslateY(set1Height);
+    	upper2.setTranslateY(set2Height);
+    	lower2.setTranslateY(set2Height);
 
 		addKeyEventHandler();
 		addGroundHandler();
+		addObstacleHandler();
     	
 		primaryStage.setScene(scene);
 		primaryStage.show();
+		
+		//lower2Move1.play();
 //		primaryStage.setResizable(false);
 	}
 
 	public static void main(String[] args) {
-		Application.launch(args);
+		Application.launch(args); 	
 	}
 
 }
