@@ -206,6 +206,14 @@ public class Main extends Application{
     	gameOver = false;
     	number2Started = false;
     	ground.setTranslateX(0);
+		upper1Move1.stop();
+		upper2Move1.stop();
+		upper1Move2.stop();
+		upper2Move2.stop();
+		lower1Move1.stop();
+		lower2Move1.stop();
+		lower1Move2.stop();
+		lower2Move2.stop();
     	upper1.setTranslateX(0);
 		upper2.setTranslateX(0);
 		lower1.setTranslateX(0);
@@ -309,7 +317,7 @@ public class Main extends Application{
 		
 		
 		//Create scene and add to stage
-		Scene scene = new Scene(root, 400, 400);
+		Scene scene = new Scene(root, 398, 398);
 		
     	flappy.xProperty().set(scene.getWidth()/2 - 25);
     	flappy.yProperty().set(scene.getHeight() - 70);
@@ -321,7 +329,7 @@ public class Main extends Application{
     	youSuck.xProperty().set(100);
     	youSuck.translateYProperty().set(50);
     	
-    	ground.yProperty().set(scene.getHeight() - 48);
+    	ground.yProperty().set(scene.getHeight() - 46);
     	ground.xProperty().set(0);
     	groundMove = new TranslateTransition(Duration.seconds(4), ground);
     	groundMove.setToX(-400);
