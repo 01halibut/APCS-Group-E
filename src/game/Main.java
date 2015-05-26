@@ -354,8 +354,7 @@ public class Main extends Application{
 		
 		primaryStage.setTitle("CrappyBird");
 		
-		//lower2Move1.play();
-//		primaryStage.setResizable(false);
+		primaryStage.setResizable(false);
 	}
 
 	public static void main(String[] args) {
