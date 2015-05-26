@@ -28,18 +28,35 @@ public class Main extends Application{
 	final double JUMP_VEL = 420;
 	private ImageView bkgrd = null ;
 	private ImageView flappy = null ;
+	private ImageView ground = null;
+	private ImageView youSuck = null;
+//	private ImageView upper1 = null;
+//	private ImageView lower1 = null;
+	private ImageView start = null;
 	private SequentialTransition flappyTransition = null;
 	private TranslateTransition flappyFall = null;
 	private TranslateTransition flappyFlap = null;
+	private TranslateTransition groundMove = null;
 	private MediaPlayer flap = null;
 	private Group root = null;
 	private boolean started = false;
+	private boolean gameOver = false;
     
     private void addKeyEventHandler(){
     	root.onMousePressedProperty().set(new EventHandler<MouseEvent>() {
     	    public void handle(MouseEvent m) {
     	        if(!m.getButton().equals(MouseButton.PRIMARY)) return;
+    	        if(gameOver){
+    	        	root.getChildren().remove(youSuck);
+    	        	root.getChildren().add(start);
+    	        	flappy.translateYProperty().set(-200);
+    	        	flappyTransition.stop();
+    	        	gameOver = false;
+    	        	ground.setTranslateX(0);
+    	        	return;
+    	        }
     	        if(!started){
+    	        	root.getChildren().remove(start);
                 	flappyFall = new TranslateTransition(
                 			Duration.seconds(Math.sqrt(2*(-flappy.getTranslateY())/GRAVITY))
                 			, flappy);
@@ -50,11 +67,13 @@ public class Main extends Application{
         				}});
                 	flappyTransition.getChildren().add(flappyFall);
                 	flappyTransition.play();
+                	groundMove.play();
     	        }
     	        flap.stop();
             	flappyTransition.stop();
             	flappyTransition.getChildren().clear();
-            	flappyFlap.setToY(flappy.getTranslateY() - (JUMP_VEL/GRAVITY)*(JUMP_VEL/2));
+            	flappyFlap.setToY(Math.max(flappy.getTranslateY() - (JUMP_VEL/GRAVITY)*(JUMP_VEL/2),
+            								-330));
             	flappyFlap.setInterpolator(new Interpolator() {
             		protected double curve(double t) {
         				return Math.sqrt(t);
@@ -75,6 +94,26 @@ public class Main extends Application{
     	    }
     	});
     }
+    
+    private void addGroundHandler(){
+    	groundMove.onFinishedProperty().set(new EventHandler<ActionEvent>(){
+			@Override
+			public void handle(ActionEvent arg0) {
+				if(gameOver) return;
+				ground.setTranslateX(0);
+				groundMove.play();
+			}
+    	});
+    	flappyTransition.onFinishedProperty().set(new EventHandler<ActionEvent>(){
+			@Override
+			public void handle(ActionEvent event) {
+				groundMove.stop();
+				started = false;
+				gameOver = true;
+				root.getChildren().add(youSuck);
+			}
+    	});
+    }
 	
 	@Override
 	public void start(Stage primaryStage) throws Exception {
@@ -83,6 +122,11 @@ public class Main extends Application{
 		
 		bkgrd = new ImageView("./resources/background.png");
 		flappy = new ImageView("./resources/flappy.png");
+		start = new ImageView("./resources/getready.png");
+		ground = new ImageView("./resources/ground.png");
+		youSuck = new ImageView("./resources/gameover.png");
+//		upper1 = new ImageView("./resources/obstacle_top.png");
+		
 		
 		flap = new MediaPlayer(new Media(ResourceLoader.class.getResource("flap.mp3").toString()));
 		
@@ -94,19 +138,35 @@ public class Main extends Application{
 		
 		
 		//Add controls
-		root.getChildren().add( bkgrd );
-		root.getChildren().add( flappy );
+		root.getChildren().addAll( bkgrd,
+									ground,
+									flappy,
+									start);
 
 		
-		addKeyEventHandler();
 		
 		//Create scene and add to stage
 		Scene scene = new Scene(root, 400, 400);
 		
     	flappy.xProperty().set(scene.getWidth()/2 - 25);
-    	flappy.yProperty().set(scene.getHeight() - 100);
+    	flappy.yProperty().set(scene.getHeight() - 70);
     	flappy.translateYProperty().set(-scene.getHeight()/2);
     	
+    	start.xProperty().set(100);
+    	start.translateYProperty().set(50);
+    	
+    	youSuck.xProperty().set(100);
+    	youSuck.translateYProperty().set(50);
+    	
+    	ground.yProperty().set(scene.getHeight() - 48);
+    	ground.xProperty().set(0);
+    	groundMove = new TranslateTransition(Duration.seconds(4), ground);
+    	groundMove.setToX(-400);
+    	groundMove.setInterpolator(Interpolator.LINEAR);
+    	
+
+		addKeyEventHandler();
+		addGroundHandler();
     	
 		primaryStage.setScene(scene);
 		primaryStage.show();
