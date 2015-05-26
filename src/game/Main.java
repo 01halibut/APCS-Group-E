@@ -12,6 +12,9 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -28,35 +31,27 @@ public class Main extends Application{
 	private SequentialTransition flappyTransition = null;
 	private TranslateTransition flappyFall = null;
 	private TranslateTransition flappyFlap = null;
-	private Button button = null;
 	private MediaPlayer flap = null;
 	private Group root = null;
-	
-    private void addButtonPressHandler(){
-        button.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-            	root.getChildren().remove(button);
-            	flappyFall = new TranslateTransition(
-            			Duration.seconds(Math.sqrt(2*(-flappy.getTranslateY())/GRAVITY))
-            			, flappy);
-            	flappyFall.setToY(0);
-            	flappyFall.setInterpolator(new Interpolator() {
-            		protected double curve(double t) {
-    					return t * t;
-    				}});
-            	flappyTransition.getChildren().add(flappyFall);
-            	flappyTransition.play();
-            }
-        });
-    }
+	private boolean started = false;
     
-    private void addMouseEventHandler(){
+    private void addKeyEventHandler(){
     	root.onMousePressedProperty().set(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-            	flap.stop();
-            	if(root.getChildren().contains(button)) return;
+    	    public void handle(MouseEvent m) {
+    	        if(!m.getButton().equals(MouseButton.PRIMARY)) return;
+    	        if(!started){
+                	flappyFall = new TranslateTransition(
+                			Duration.seconds(Math.sqrt(2*(-flappy.getTranslateY())/GRAVITY))
+                			, flappy);
+                	flappyFall.setToY(0);
+                	flappyFall.setInterpolator(new Interpolator() {
+                		protected double curve(double t) {
+        					return t * t;
+        				}});
+                	flappyTransition.getChildren().add(flappyFall);
+                	flappyTransition.play();
+    	        }
+    	        flap.stop();
             	flappyTransition.stop();
             	flappyTransition.getChildren().clear();
             	flappyFlap.setToY(flappy.getTranslateY() - (JUMP_VEL/GRAVITY)*(JUMP_VEL/2));
@@ -77,8 +72,8 @@ public class Main extends Application{
             	flappyTransition.getChildren().addAll(flappyFlap, flappyFall);
             	flap.play();
             	flappyTransition.play();
-            }
-        });
+    	    }
+    	});
     }
 	
 	@Override
@@ -88,7 +83,6 @@ public class Main extends Application{
 		
 		bkgrd = new ImageView("./resources/background.png");
 		flappy = new ImageView("./resources/flappy.png");
-		button = new Button("Start");
 		
 		flap = new MediaPlayer(new Media(ResourceLoader.class.getResource("flap.mp3").toString()));
 		
@@ -102,11 +96,9 @@ public class Main extends Application{
 		//Add controls
 		root.getChildren().add( bkgrd );
 		root.getChildren().add( flappy );
-		root.getChildren().add( button );
+
 		
-		addButtonPressHandler();
-		addMouseEventHandler();
-		
+		addKeyEventHandler();
 		
 		//Create scene and add to stage
 		Scene scene = new Scene(root, 400, 400);
@@ -115,12 +107,10 @@ public class Main extends Application{
     	flappy.yProperty().set(scene.getHeight() - 100);
     	flappy.translateYProperty().set(-scene.getHeight()/2);
     	
-    	button.translateXProperty().set(scene.getWidth()/2 - 25);
-    	button.translateYProperty().set(scene.getHeight() - 50);
     	
 		primaryStage.setScene(scene);
 		primaryStage.show();
-		
+//		primaryStage.setResizable(false);
 	}
 
 	public static void main(String[] args) {
